@@ -1,3 +1,4 @@
+from ecdsa import SigningKey, VerifyingKey, SECP256k1
 import hashlib
 import random
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
