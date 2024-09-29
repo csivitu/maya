@@ -49,3 +49,8 @@ if verification_result:
     print("Message verified successfully!")
 else:
     print("Message verification failed!")
+
+# Length Checking of the Hash should be fixed to be specific to the hash algorithm.
+if len(hashed_message) != 32:  # <-- Highlighted change for hash length checking (SHA-256 produces a 32-byte hash)
+    print("Hash length is not correct!")  # <-- Added message for clarity
+
