@@ -42,7 +42,7 @@ def receive_message(sig, msg):
     return public_key.verify(sig, hashed_message)
 
 signed_message = send_message(message)
-verification_result = receive_message(signature_hex, signed_message)
+verification_result = receive_message(signature, signed_message)
 
 if verification_result:
     print("Message verified successfully!")
