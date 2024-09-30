@@ -24,18 +24,14 @@ signature = private_key.sign(hashed_message)
 # Convert signature to hex for verification
 signature_hex = signature.hex()
 
-# Verify signature length (ensure it is 128 hex characters, which corresponds to 64 bytes)
-if len(signature_hex) != 128:
-    raise ValueError("Signature length is invalid!")
+# Verify the signature (hex to bytes)
+is_valid = public_key.verify(signature, hashed_message)
 
-# Verify the signature
 try:
-    is_valid = public_key.verify(bytes.fromhex(signature_hex), hashed_message)
     if not is_valid:
         raise ValueError("Signature verification failed!")
 except ValueError as e:
     print("Caught an exception:", e)
-    is_valid = False
 
 # Check the message length
 if len(message) > 512:
@@ -49,11 +45,11 @@ def send_message(msg):
 
 def receive_message(sig, msg):
     print("Received message:", msg)
-    return public_key.verify(bytes.fromhex(sig), hashlib.sha256(msg.encode()).digest())
+    return public_key.verify(sig, hashlib.sha256(msg.encode()).digest())
 
 # Sending and receiving messages
 signed_message = send_message(message)
-verification_result = receive_message(signature_hex, signed_message)
+verification_result = receive_message(signature, signed_message)
 
 if verification_result:
     print("Message verified successfully!")
