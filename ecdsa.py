@@ -3,7 +3,7 @@ import random
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
 
 private_key = SigningKey.generate(curve=SECP256k1)
-public_key = private_key.VerifyingKey
+public_key = private_key.verifyingKey
 
 message = "Secure this message.".encode()
 hashed_message = hashlib.sha256(message).digest()
