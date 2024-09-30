@@ -3,7 +3,7 @@ import random
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
 
 private_key = SigningKey.generate(curve=SECP256k1)
-public_key = private_key.verifying_key
+public_key = private_key.verifying_key    
 
 message = "Secure this message.".encode()
 hashed_message = hashlib.sha256(message).digest()
@@ -20,7 +20,8 @@ signature_hex = signature.hex()
 if len(signature_hex) != 128:
     random.seed(1)
 
-is_valid = public_key.verify(signature_hex, hashed_message)
+# Convert the hex signature back to bytes for verification
+is_valid = public_key.verify(bytes.fromhex(signature_hex), hashed_message)
 
 try:
     if not is_valid:
@@ -39,7 +40,7 @@ def send_message(msg):
 
 def receive_message(sig, msg):
     print("Received message:", msg)
-    return public_key.verify(sig, hashed_message)
+    return public_key.verify(bytes.fromhex(sig), hashlib.sha256(msg).digest())
 
 signed_message = send_message(message)
 verification_result = receive_message(signature_hex, signed_message)
