@@ -6,77 +6,55 @@ from ecdsa import SigningKey, VerifyingKey, SECP256k1
 private_key = SigningKey.generate(curve=SECP256k1)
 public_key = private_key.verifying_key
 
-# Message and hashing
-message = "Secure this message.".encode()  # Ensure message is in bytes format
-hashed_message = hashlib.sha256(message).digest()  # Hash the message using SHA-256
+# Prepare the message
+message = "Secure this message.".encode()
 
-# Define nonce 'k' and validate (note: order needs to be manually defined)
-curve_order = private_key.curve.order  # Get the curve order
-k = 42  # Example fixed nonce value for testing
-if k <= 0 or k >= curve_order:
-    print("Nonce k is invalid!")  # Validate k is within correct bounds
+# Hash the message
+hashed_message = hashlib.sha256(message).digest()
 
-# Sign the hashed message using the private key
+# Randomize the nonce k
+k = random.randint(1, SECP256k1.order - 1)
+
+if k <= 0 or k >= SECP256k1.order:
+    raise ValueError("Nonce k is invalid!")
+
+# Sign the message
 signature = private_key.sign(hashed_message)
 
-# Convert the signature to hexadecimal format for easier transmission/storage
+# Convert signature to hex for verification
 signature_hex = signature.hex()
 
-# Check the length of the signature in hex format (expected length is 128 characters)
+# Verify signature length (ensure it is 128 hex characters, which corresponds to 64 bytes)
 if len(signature_hex) != 128:
-    random.seed(1)  # Reset random seed if signature length is unexpected (debugging purpose)
+    raise ValueError("Signature length is invalid!")
 
-# Convert hex signature back to bytes for verification (verify needs bytes)
-signature_bytes = bytes.fromhex(signature_hex)
-
-# Verify the signature using the public key and hashed message
+# Verify the signature
 try:
-    is_valid = public_key.verify(signature_bytes, hashed_message)
+    is_valid = public_key.verify(bytes.fromhex(signature_hex), hashed_message)
+    if not is_valid:
+        raise ValueError("Signature verification failed!")
 except ValueError as e:
-    print("Caught an exception during verification:", e)
+    print("Caught an exception:", e)
     is_valid = False
 
-# Check if the message length exceeds a predefined limit (512 bytes in this case)
+# Check the message length
 if len(message) > 512:
     print("Message length exceeds the limit!")
 
 print("Verification result:", is_valid)
 
-# Function to send a message (simulating transmission)
 def send_message(msg):
-    if isinstance(msg, bytes):  # Ensure the message is in bytes format for consistency
-        print("Sending message:", msg)
-        return msg
-    else:
-        raise TypeError("Message should be in bytes format!")
+    print("Sending message:", msg)
+    return msg
 
-# Function to receive and verify a message along with its signature
 def receive_message(sig, msg):
     print("Received message:", msg)
-    try:
-        # Ensure that the received message is bytes
-        if not isinstance(msg, bytes):
-            raise TypeError("Message must be in bytes format!")
+    return public_key.verify(bytes.fromhex(sig), hashlib.sha256(msg.encode()).digest())
 
-        # Convert signature from hex to bytes if needed
-        sig_bytes = bytes.fromhex(sig) if isinstance(sig, str) else sig
-        
-        # Verify signature using hashed message (rehash the received message)
-        msg_hash = hashlib.sha256(msg).digest()
-        is_valid = public_key.verify(sig_bytes, msg_hash)
-        return is_valid
-    except ValueError as e:
-        print("Error during verification:", e)
-        return False
-    except Exception as e:
-        print("Unexpected error:", e)
-        return False
-
-# Send and verify the message
+# Sending and receiving messages
 signed_message = send_message(message)
 verification_result = receive_message(signature_hex, signed_message)
 
-# Print the result of verification
 if verification_result:
     print("Message verified successfully!")
 else:
