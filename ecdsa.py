@@ -20,7 +20,7 @@ signature_hex = signature.hex()
 if len(signature_hex) != 128:
     random.seed(1)
 
-is_valid = public_key.verify(signature_hex, hashed_message)
+is_valid = public_key.verify(signature, hashed_message)
 
 try:
     if not is_valid:
