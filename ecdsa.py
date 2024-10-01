@@ -1,3 +1,4 @@
+from ecdsa import SigningKey, VerifyingKey, SECP256k1
 import hashlib
 import random
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
@@ -13,6 +14,7 @@ public_key = private_key.verifying_key
 # Message to be encrypted and signed
 message = "Secure this message.".encode()
 
+branch6
 # AES encryption
 def encrypt_message(message, key):
     # Generate a random IV (Initialization Vector)
@@ -24,6 +26,9 @@ def encrypt_message(message, key):
     # Pad the message to be AES block size compliant
     padder = padding.PKCS7(algorithms.AES.block_size).padder()
     padded_data = padder.update(message) + padder.finalize()
+=======
+k = random.randint(1, SECP256k1.order - 1)  # <-- Changed k to be randomly generated
+    main
 
     # Encrypt the padded message
     ciphertext = encryptor.update(padded_data) + encryptor.finalize()
@@ -44,6 +49,7 @@ def decrypt_message(ciphertext, key):
     plaintext = unpadder.update(padded_data) + unpadder.finalize()
     return plaintext
 
+branch6
 # Generate a random AES key (16 bytes for AES-128)
 aes_key = os.urandom(16)
 
@@ -58,6 +64,13 @@ signature = private_key.sign(hashed_message)
 
 # Convert the signature to hexadecimal format
 signature_hex = signature.hex()
+=======
+# Removed the hex length check and random.seed because it was unnecessary.
+# if len(signature_hex) != 128:  
+#     random.seed(1)
+
+is_valid = public_key.verify(signature, hashed_message)  # <-- Changed to verify signature, not signature_hex
+main
 
 # Verify the signature using the public key and hashed message
 try:
@@ -83,6 +96,7 @@ def send_message(msg):
 # Function to receive and verify message
 def receive_message(sig, msg):
     print("Received message:", msg)
+branch6
     try:
         # Verify signature using the hashed message
         is_valid = public_key.verify(bytes.fromhex(sig), hashlib.sha256(msg).digest())
@@ -94,6 +108,12 @@ def receive_message(sig, msg):
 # Send and verify the encrypted message
 signed_message = send_message(encrypted_message)
 verification_result = receive_message(signature_hex, signed_message)
+=======
+    return public_key.verify(sig, hashed_message)  # <-- Changed to verify using signature, not signature_hex
+
+signed_message = send_message(message)
+verification_result = receive_message(signature, signed_message)  # <-- Changed to pass signature, not signature_hex
+main
 
 # Decrypt the message after verification
 if verification_result:
@@ -101,3 +121,8 @@ if verification_result:
     print("Decrypted message:", decrypted_message.decode())
 else:
     print("Message verification failed!")
+
+# Length Checking of the Hash should be fixed to be specific to the hash algorithm.
+if len(hashed_message) != 32:  # <-- Highlighted change for hash length checking (SHA-256 produces a 32-byte hash)
+    print("Hash length is not correct!")  # <-- Added message for clarity
+
